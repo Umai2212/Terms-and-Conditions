@@ -1,0 +1,542 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms and Conditions - Adventurer Divine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            height: clamp(60px, 10vw, 80px);
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            width: 100%;
+            max-width: 1440px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 clamp(10px, 5vw, 20px);
+        }
+
+        .logo {
+            font-size: clamp(18px, 5vw, 24px);
+            font-weight: 700;
+            color: #2e7d32;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: clamp(10px, 3vw, 15px);
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+            font-size: clamp(12px, 3vw, 16px);
+        }
+
+        .nav-menu a:hover {
+            color: #2e7d32;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            min-width: 160px;
+            z-index: 1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content a {
+            display: block;
+            padding: 10px;
+            font-size: clamp(12px, 3vw, 14px);
+        }
+
+        .cta-button {
+            background: #2e7d32;
+            color: #fff;
+            padding: clamp(6px, 2vw, 8px) clamp(12px, 3vw, 16px);
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: clamp(12px, 3vw, 16px);
+        }
+
+        .hamburger {
+            display: none;
+            font-size: clamp(20px, 5vw, 24px);
+            cursor: pointer;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: clamp(250px, 60vw, 400px);
+            background: url('https://images.unsplash.com/photo-1472214103451-9374bd1c798e') no-repeat center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.2));
+        }
+
+        .hero-content {
+            position: relative;
+            color: #fff;
+            padding: clamp(15px, 5vw, 20px);
+        }
+
+        .hero-content h1 {
+            font-size: clamp(20px, 6vw, 36px);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .hero-content p {
+            font-size: clamp(12px, 4vw, 18px);
+        }
+
+        /* Content Wrapper */
+        .content-wrapper {
+            position: relative;
+            background: url('https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0') no-repeat center/cover;
+            background-attachment: fixed;
+            background-size: cover;
+            padding: clamp(30px, 10vw, 60px) 0;
+        }
+
+        .content-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(249, 249, 249, 0.9);
+        }
+
+        .content-wrapper > * {
+            position: relative;
+        }
+
+        /* Content Sections */
+        .section {
+            padding: clamp(20px, 8vw, 40px) clamp(10px, 5vw, 20px);
+            max-width: 1440px;
+            margin: 0 auto clamp(10px, 5vw, 20px) auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            font-size: clamp(18px, 5vw, 28px);
+            margin-bottom: clamp(15px, 4vw, 20px);
+            color: #2e7d32;
+        }
+
+        .section p {
+            font-size: clamp(12px, 3vw, 16px);
+            line-height: 1.6;
+            margin-bottom: clamp(10px, 3vw, 15px);
+            color: #333;
+        }
+
+        .section ul {
+            list-style: disc;
+            padding-left: clamp(15px, 5vw, 20px);
+            margin-bottom: clamp(15px, 4vw, 20px);
+        }
+
+        .section ul li {
+            font-size: clamp(12px, 3vw, 16px);
+            margin-bottom: clamp(8px, 2vw, 10px);
+            color: #333;
+        }
+
+        /* Newsletter Signup */
+        .newsletter {
+            padding: clamp(30px, 10vw, 60px) clamp(10px, 5vw, 20px);
+            background: #2e7d32;
+            color: #fff;
+            text-align: center;
+        }
+
+        .newsletter h2 {
+            font-size: clamp(20px, 5vw, 36px);
+            margin-bottom: clamp(15px, 4vw, 20px);
+        }
+
+        .newsletter form {
+            display: flex;
+            justify-content: center;
+            gap: clamp(8px, 2vw, 10px);
+            margin-bottom: clamp(15px, 4vw, 20px);
+            flex-wrap: wrap;
+        }
+
+        .newsletter input[type="email"] {
+            padding: clamp(8px, 2vw, 10px);
+            border: none;
+            border-radius: 5px;
+            width: clamp(180px, 80%, 300px);
+        }
+
+        .newsletter button {
+            background: #fff;
+            color: #2e7d32;
+            padding: clamp(8px, 2vw, 10px) clamp(15px, 4vw, 20px);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: clamp(12px, 3vw, 16px);
+        }
+
+        /* Footer */
+        .footer {
+            background: #424242;
+            color: #fff;
+            padding: clamp(20px, 8vw, 40px) clamp(10px, 5vw, 20px);
+            text-align: center;
+        }
+
+        .footer-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: clamp(15px, 5vw, 20px);
+        }
+
+        .footer-column {
+            flex: 1;
+            min-width: clamp(120px, 40%, 200px);
+        }
+
+        .footer-column h3 {
+            font-size: clamp(14px, 4vw, 20px);
+            margin-bottom: clamp(15px, 4vw, 20px);
+        }
+
+        .footer-column a {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            margin-bottom: clamp(8px, 2vw, 10px);
+            font-size: clamp(12px, 3vw, 16px);
+        }
+
+        .social-icons a {
+            color: #fff;
+            margin: 0 clamp(8px, 2vw, 10px);
+            font-size: clamp(16px, 5vw, 24px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: clamp(60px, 10vw, 80px);
+                left: 0;
+                width: 100%;
+                background: #fff;
+                flex-direction: column;
+                padding: clamp(15px, 5vw, 20px);
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
+
+            .nav-menu.active {
+                display: flex;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .dropdown-content {
+                position: static;
+                box-shadow: none;
+            }
+
+            .cta-button {
+                margin-left: auto;
+            }
+
+            .content-wrapper {
+                background-attachment: scroll;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero {
+                height: clamp(200px, 50vw, 300px);
+            }
+
+            .hero-content h1 {
+                font-size: clamp(18px, 8vw, 28px);
+            }
+
+            .hero-content p {
+                font-size: clamp(10px, 5vw, 16px);
+            }
+
+            .section {
+                padding: clamp(15px, 5vw, 20px);
+            }
+
+            .section h2 {
+                font-size: clamp(16px, 6vw, 24px);
+            }
+
+            .section p,
+            .section ul li {
+                font-size: clamp(10px, 4vw, 14px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">Adventurer Divine</div>
+            <div class="hamburger">☰</div>
+            <div class="nav-menu">
+                <a href="#">Home</a>
+                <div class="dropdown">
+                    <a href="#">Destinations ⌄</a>
+                    <div class="dropdown-content">
+                        <a href="#">Colorado</a>
+                        <a href="#">Utah</a>
+                        <a href="#">California</a>
+                    </div>
+                </div>
+                <a href="#">Hiking Routes</a>
+                <a href="#">Gear</a>
+                <a href="#">Tips & Guides</a>
+                <a href="#">Blog</a>
+            </div>
+            <a href="#" class="cta-button">Subscribe</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Terms and Conditions</h1>
+            <p>Guidelines for using our website and services</p>
+        </div>
+    </section>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <!-- Introduction -->
+        <section class="section">
+            <h2>Introduction</h2>
+            <p>[Placeholder for introduction to the terms and conditions, outlining the agreement for using Adventurer Divine's website and services.]</p>
+        </section>
+
+        <!-- Acceptance of Terms -->
+        <section class="section">
+            <h2>Acceptance of Terms</h2>
+            <ul>
+                <li>[Using the site constitutes agreement to these terms.]</li>
+                <li>[Users must comply with all applicable laws.]</li>
+            </ul>
+        </section>
+
+        <!-- Use of Content -->
+        <section class="section">
+            <h2>Use of Content</h2>
+            <ul>
+                <li>[Content is for personal, non-commercial use.]</li>
+                <li>[No reproduction or distribution without permission.]</li>
+                <li>[Users may not modify or misuse content.]</li>
+            </ul>
+        </section>
+
+        <!-- User Conduct -->
+        <section class="section">
+            <h2>User Conduct</h2>
+            <ul>
+                <li>[Prohibited actions: illegal activities, harmful content.]</li>
+                <li>[Respect intellectual property and privacy of others.]</li>
+            </ul>
+        </section>
+
+        <!-- Intellectual Property -->
+        <section class="section">
+            <h2>Intellectual Property</h2>
+            <p>[Placeholder for details on ownership of site content, trademarks, and copyrights.]</p>
+        </section>
+
+        <!-- Third-Party Links -->
+        <section class="section">
+            <h2>Third-Party Links</h2>
+            <ul>
+                <li>[Links to external sites are for convenience.]</li>
+                <li>[Adventurer Divine is not responsible for third-party content.]</li>
+            </ul>
+        </section>
+
+        <!-- Limitation of Liability -->
+        <section class="section">
+            <h2>Limitation of Liability</h2>
+            <p>[Placeholder for statement on limiting liability for damages or losses from site use.]</p>
+        </section>
+
+        <!-- Termination -->
+        <section class="section">
+            <h2>Termination</h2>
+            <p>[Placeholder for conditions under which access to the site may be terminated.]</p>
+        </section>
+
+        <!-- Governing Law -->
+        <section class="section">
+            <h2>Governing Law</h2>
+            <p>[Placeholder for jurisdiction and laws governing the terms.]</p>
+        </section>
+
+        <!-- Changes to Terms -->
+        <section class="section">
+            <h2>Changes to Terms</h2>
+            <p>[Placeholder for how updates to the terms will be communicated.]</p>
+        </section>
+
+        <!-- Contact Us -->
+        <section class="section">
+            <h2>Contact Us</h2>
+            <p>[Placeholder for contact information for terms-related inquiries.]</p>
+        </section>
+    </div>
+
+    <!-- Newsletter Signup -->
+    <section class="newsletter">
+        <h2>Never Miss a Trail</h2>
+        <form>
+            <input type="email" placeholder="Enter your email" required>
+            <button type="submit">Subscribe</button>
+        </form>
+        <p>Get trail updates, beginner tips, and gear reviews weekly</p>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-column">
+                <h3>Quick Links</h3>
+                <a href="#">Home</a>
+                <a href="#">Routes</a>
+                <a href="#">Destinations</a>
+                <a href="#">Blog</a>
+            </div>
+            <div class="footer-column">
+                <h3>About</h3>
+                <p>Adventurer Divine is your go-to resource for hiking in the USA.</p>
+                <p>Contact: info@adventurerdivine.com</p>
+            </div>
+            <div class="footer-column">
+                <h3>Follow Us</h3>
+                <div class="social-icons">
+                    <a href="#">Instagram</a>
+                    <a href="#">YouTube</a>
+                    <a href="#">Twitter</a>
+                </div>
+            </div>
+        </div>
+        <p style="margin-top: clamp(15px, 4vw, 20px);">&copy; 2025 Adventurer Divine. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Hamburger menu toggle
+        document.querySelector('.hamburger').addEventListener('click', () => {
+            document.querySelector('.nav-menu').classList.toggle('active');
+        });
+    </script>
+</body>
+</html>
